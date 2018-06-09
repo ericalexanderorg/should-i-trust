@@ -12,7 +12,7 @@ should-i-trust is a tool to evaluate OSINT signals for a domain.
 ### Use Case
 -------------
 You're part of a review board that's responsible for evaluating new vendors. You're specifically responsible for 
-ensuring the new vendor meets compliance and security requirements. 
+ensuring new vendors meet compliance and security requirements. 
 
 Standard operation procedure is to ask for one or all of the following: SOC report, VSAQ, CAIQ, SIG/SIG-Lite. All 
 vendors will not have these reports and/or questionnaire answers. Maybe it's org process to deny vendor intake
@@ -28,7 +28,7 @@ to quickly gather OSINT data for further evaluation.
 
 ### Setup
 -------------
-Create a settings.json fike in the python2 file with your cenys.io creds. See settings.json.example for an example. 
+Create a settings.json file in the python2 file with your cenys.io creds. See settings.json.example for an example. 
 
 ### Running
 -------------
@@ -44,7 +44,7 @@ The script will create a working directory with *some* of the API responses. Som
 future runs to avoid API caps and improve speed. 
 
 The following information will be returned to the console
-+ If there's an indicator the domain partipates in a bug bounty program
++ If there's an indicator the domain participates in a bug bounty program
 + Certs found through Google's transparency report
 + SSL Labs grade of sites found (if chosen to run)
 + Censys.io listing of open ports and website titles found
