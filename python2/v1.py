@@ -10,15 +10,18 @@ class Inspect(object):
     def __init__(self,domain,working_dir,settings_file):
         self.domain = domain
         self.working_dir = working_dir
-        self.settings_file = settings_file
         self.output = "Domain: %s\n" % self.domain
+        # Load censys_uid and censys_secret
+        with open(settings_file) as json_data:
+            self.settings = json.load(json_data)
 
         self.check_bugbounty(self.domain)
         self.check_google_transparency(domain)
         self.check_censys(domain)
         self.check_github(domain)
-        self.check_bitbucket(domain)
+        self.check_bitbucket(domain) 
         self.check_gitlab(domain)
+        self.check_virus_total(domain)
         print("Generating Report...\n\n\n")
         print(self.output)
 
@@ -42,6 +45,47 @@ class Inspect(object):
         except:
             return False
 
+    def check_virus_total(self, domain):
+        print("Checking VirusTotal:\n")
+        self.output += "\n\nVirusTotal:\n"
+        url = "https://www.virustotal.com/vtapi/v2/domain/report"
+        url = url + "?domain=%s&apikey=%s" % (domain, self.settings["virus_total_key"])
+        
+        # Check if we already have VirusTotal data for this domain and retrieve if not
+        vt_file = os.path.join(self.working_dir, domain + ".vt")
+        if not os.path.exists(vt_file):
+            r = requests.get(url)
+            if r.status_code == 200:
+                open(vt_file, 'wb').write(r.content)
+            else:
+                print "error occurred: %s" % r.content
+                return
+
+        with open(vt_file) as json_data:
+            vt_data = json.load(json_data)
+
+        if 'detected_downloaded_samples' in vt_data:
+            self.output += "\tDetected Samples:\n" 
+            for sample in vt_data["detected_downloaded_samples"]:
+                self.output += "\t\tSHA256: %s\n" % (sample["sha256"])
+                self.output += "\t\t\tDate: %s\n" % (sample["date"])
+                self.output += "\t\t\tHits: %s/%s\n" % (sample["positives"], sample["total"])
+        if 'Malwarebytes hpHosts info' in vt_data:
+            self.output += "\tMalwarebytes hpHosts info: %s\n" % (vt_data["Malwarebytes hpHosts info"])
+        if 'Websense ThreatSeeker category' in vt_data:
+            self.output += "\tWebsense ThreatSeeker category: %s\n" % (vt_data["Websense ThreatSeeker category"])
+        if 'Webutation domain info' in vt_data:
+            self.output += "\tWebutation Verdict: %s\n" % (vt_data["Webutation domain info"]["Verdict"])
+        if 'BitDefender category' in vt_data:
+            self.output += "\tBitDefender category: %s\n" % (vt_data["BitDefender category"])
+
+        if 'subdomains' in vt_data:
+            self.output += "\tSub Domains:\n"
+            for subdomain in vt_data["subdomains"]:
+                self.output += "\t\t%s\n" % (subdomain)
+
+        
+
     def check_gitlab(self, domain):
         print("Checking GitLab:\n")
         self.output += "\n\nGitLab:\n"
@@ -56,17 +100,21 @@ class Inspect(object):
                 self.output += "\t" + items["description"] + "\n\t\t(" + items["web_url"] + ")\n"
 
     def check_bitbucket(self, domain):
-        print("Checking BitBucket:\n")
-        self.output += "\n\nBitBucket:\n"
-        url = "https://bitbucket.org/api/1.0/users/"
-        # remove tld from domain
-        q = domain.split(".")[0]
-        url = url + q
-        r = requests.get(url)
-        json_dict = json.loads(r.content)
-        for repos in json_dict["repositories"]:
-            if items["slug"]:
-                self.output += "\t" + items["slug"] + ")\n"
+        try: 
+            print("Checking BitBucket:\n")
+            self.output += "\n\nBitBucket:\n"
+            url = "https://bitbucket.org/api/1.0/users/"
+            # remove tld from domain
+            q = domain.split(".")[0]
+            url = url + q
+            r = requests.get(url)
+            json_dict = json.loads(r.content)
+            if 'repos' in json_dict:
+                for repos in json_dict["repositories"]:
+                    if items["slug"]:
+                        self.output += "\t" + items["slug"] + ")\n"
+        except:
+            print("Error Processing BitBucket")
 
     def check_github(self, domain):
         print("Checking GitHub:\n")
@@ -184,20 +232,15 @@ class Inspect(object):
         self.output += "\nCensys Data:\n"
         API_URL = "https://censys.io/api/v1"
 
-        if not os.path.exists(settings_file):
-            # No settings file, exit method
+        if not self.settings["censys_uid"]:
+            # No censys settings, exit
             return
-        
-        # Load censys_uid and censys_secret
-        with open(settings_file) as json_data:
-            settings = json.load(json_data)
-        json.dumps(settings)
 
         # Check if we already have censys data for this domain and retrieve if not
         censys_file = os.path.join(self.working_dir, domain + ".censys")
         if not os.path.exists(censys_file):
             params = {"query" : domain}
-            r = requests.post(API_URL + "/search/ipv4", json = params, auth=(settings["censys_uid"], settings["censys_secret"]))
+            r = requests.post(API_URL + "/search/ipv4", json = params, auth=(self.settings["censys_uid"], self.settings["censys_secret"]))
             if r.status_code == 200:
                 open(censys_file, 'wb').write(r.content)
             else:
@@ -222,7 +265,7 @@ class Inspect(object):
             ip = result["ip"]
             ip_file = os.path.join(self.working_dir, ip + ".censys")
             if not os.path.exists(ip_file):
-                r = requests.get(API_URL + "/view/ipv4/" + ip, auth=(settings["censys_uid"], settings["censys_secret"]))
+                r = requests.get(API_URL + "/view/ipv4/" + ip, auth=(self.settings["censys_uid"], self.settings["censys_secret"]))
                 if r.status_code == 200:
                     open(ip_file, 'wb').write(r.content)
                 else:

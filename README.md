@@ -49,3 +49,6 @@ The following information will be returned to the console
 + SSL Labs grade of sites found (if chosen to run)
 + Censys.io listing of open ports and website titles found
 + Matching repositories found on GitHub, GitLab, and Bitbucket
+
+### Road Map
+* Add Virus Total data (https://www.virustotal.com/#/domain/www.example.com)
