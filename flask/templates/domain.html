@@ -1,0 +1,63 @@
+<div id="domain-title">{{ domain }}</div>
+    <div id="domain-data">
+    <div class="domain-tile" id="Misc">
+        <h1>Misc</h1>
+        <ul>
+            <!-- <li>Ports: {{domain_data['ports']}}</li> -->
+            <li>Webutation Verdict: {{domain_data['webutation_verdict']}}</li>
+            <li>WebSense ThreatSeeker Category: {{domain_data['websense_threatseeker_category']}}</li>
+            <li>BitDefender Category: {{domain_data['bitdefender_category']}}</li>
+            <li>Bug Bounty: {{domain_data['bug_bounty']}}</li>
+        </ul>
+    </div>
+    <div class="domain-tile" id="Domains">
+        <h1>Domains</h1>
+        <ul>
+        {% for sub_domain in domain_data['sub_domains'] %}
+            <div class="hide-children">
+                <li><i class="glyphicon glyphicon-chevron-right"></i><a href="javascript:void(0)" >{{ sub_domain }}</a></li>
+                <ul style="display:none">
+                    <li><a href="http://{{ sub_domain }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>http</a></li>
+                    <li><a href="https://{{ sub_domain }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>https</a></li>
+                    <li><a href="https://censys.io/ipv4?q={{ sub_domain }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>censys.io</a></li>
+                    <li><a href="https://www.shodan.io/search?query={{ sub_domain }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>shodan.io</a></li>
+                </ul>
+            </div>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="domain-tile" id="IPs">
+        <h1>Ports/IPs</h1>
+        <ul class="hide-children">
+        {% for port in domain_data['ports'] %}
+            <div class="hide-children">
+                <li><i class="glyphicon glyphicon-chevron-right"></i><a href="javascript:void(0)">{{ port }}</a></li>
+                <ul style="display:none">
+                {% for ip in domain_data['ports'][port] %}
+                    <li><a href="https://censys.io/ipv4?q={{ ip }}" target="_blank">{{ ip }}</a></li>
+                    <ul>
+                            <li><a href="https://censys.io/ipv4?q={{ ip }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>censys.io</a></li>
+                            <li><a href="https://www.shodan.io/search?query={{ ip }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>shodan.io</a></li>
+                    </ul>
+                    <!-- <li><a href="https://www.shodan.io/search?query={{ sub_domain }}" target="_blank">shodan.io</a></li> -->
+                {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="domain-tile" id="Repos">
+        <h1>Repos</h1>
+        <ul>
+        {% for repo in domain_data['github'] %}
+            <li><a href="{{ repo['web_url'] }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>{{ repo['description'] }}</a></li>
+        {% endfor %}
+        {% for repo in domain_data['gitlab'] %}
+            <li><a href="{{ repo['web_url'] }}" target="_blank"><i class="glyphicon glyphicon-new-window"></i>{{ repo['description'] }}</a></li>
+        {% endfor %}
+        {% for repo in domain_data['bitbucket'] %}
+            <li><a href="#" target="_blank">{{ repo['slug'] }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>

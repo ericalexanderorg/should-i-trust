@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body>
+    <div class="wrapper">
+            <!-- Sidebar Holder -->
+            <nav id="sidebar">
+                <div class="sidebar-header">
+                    Should I Trust:
+                </div>
+                <form class="new-domain" id="new-domain" action="#" style="margin:auto;max-width:300px">
+                        <input type="text" placeholder="    New Domain">
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                <ul class="list-unstyled components" id="domain-list">
+                </ul>
+            </nav>
+
+            <!-- Page Content Holder -->
+            <div id="content">
+            </div>
+            <div id="loading" style="display:none">
+                <img src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
+                <p1>loading...</p1>
+            </div>
+    </div>
+
+
+ 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="text/javascript">
+        // page load
+        $(document).ready(function () {
+            // Load menu on page load
+            $( "#domain-list" ).load( "/menu" );
+            // New Domain
+            $( "#new-domain" ).submit(function( event ) {
+                domain = $( "input:first" ).val();
+                var domain_match = new RegExp('^[a-z0-9-]{2,30}\.[a-z]{2,10}$');
+                if (domain_match.test(domain)) {
+                    displayDomain(domain);
+                }
+                else {
+                    alert("NO domain match");
+                }
+                event.preventDefault();
+            });
+        });
+        // Click on left side bar menu item
+        $( document ).on( "click", ".sidebar-link", function() {
+            domain =  $(this).attr("domain");
+            //$( "#content" ).load( "/domain/" + domain );
+            displayDomain(domain);
+        })
+        // Click on top nav button
+        $( document ).on( "click", ".top-nav-link", function() {
+            var divID = "#" + $(this).text()
+            $('.domain-data').hide();
+            $( divID ).show( "slow", function() {
+                // Animation complete.
+            });
+        })
+        // Display/Hide all children
+        $( document ).on( "click", ".hide-children", function() {
+            $(this).children().show();
+        })
+        function displayDomain(domain) {
+            $('#content').hide();
+            $('#loading').show();
+            $.get( "domain/" + domain) 
+                .done(function() {
+                    $( "#content" ).load( "/domain/" + domain )
+                    $('#loading').hide();
+                    $('#content').show();
+                    $( "#domain-list" ).load( "/menu" );
+                })
+                .fail(function() {
+                    alert("Error loading data for " + domain);
+                    $('#loading').hide();
+                    $('#content').show();
+                });
+        }
+
+    </script>
+</body>
+
+</html>

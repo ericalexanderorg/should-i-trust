@@ -1,0 +1,5 @@
+{
+    "censys_uid": "x",
+    "censys_secret": "y", 
+    "virus_total_key": "z"
+}

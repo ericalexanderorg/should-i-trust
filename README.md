@@ -28,28 +28,23 @@ to quickly gather OSINT data for further evaluation.
 
 ### Setup
 -------------
-Create a settings.json file in the python2 file with your cenys.io creds. See settings.json.example for an example. 
+Create a settings.json file in the flask directory with your API secrets. See settings.json.example for an example. 
 
 ### Running
 -------------
-> python v1.py -d ericalexander.org
+> cd should-i-trust/flask/
+> python app.py
 
-The script will prompt for the following
-+ Check SSL Labs grade for each cert found
-+ Pull data on censys.io findings if results exceed 50. This is to avoid maxing out the free API limitations. 
+By default the flask will listen on port 8080. Connect to http://localhost:8080
+
 
 ### Output
 -------------
-The script will create a working directory with *some* of the API responses. Some respones are saved to reduce API calls on 
-future runs to avoid API caps and improve speed. 
-
-The following information will be returned to the console
 + If there's an indicator the domain participates in a bug bounty program
-+ Certs found through Google's transparency report
-+ SSL Labs grade of sites found (if chosen to run)
-+ Censys.io listing of open ports and website titles found
-+ Matching repositories found on GitHub, GitLab, and Bitbucket
-+ Data found on virustotal.com
++ Domains found through VirusTotal, Censys.io, and the Google Cert Transparency Report
++ IPs and open ports found through Censys.io
++ Repositories found on GitHub, GitLab, and Bitbucket
++ Misch data found on virustotal.com
 
 ### Road Map
 TBD
