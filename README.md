@@ -5,6 +5,8 @@
 ![](https://img.shields.io/github/release/ericalexanderorg/should-i-trust.svg) 
 ![](https://img.shields.io/github/issues/ericalexanderorg/should-i-trust.svg) 
 
+![flask screenshot](https://github.com/ericalexanderorg/should-i-trust/raw/master/readme-images/flask-screenshot.jpg)
+
 ## Summary
 -------------
 should-i-trust is a tool to evaluate OSINT signals for a domain. 
