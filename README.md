@@ -36,9 +36,11 @@ Create a settings.json file in the flask directory with your API secrets. See se
 -------------
 > cd should-i-trust/flask/
 
+> pip install -r requirements.txt
+
 > python app.py
 
-By default the flask will listen on port 8080. Connect to http://localhost:8080
+By default flask will listen on port 8080. Connect to http://localhost:8080
 
 
 ### Output
