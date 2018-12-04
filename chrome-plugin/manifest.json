@@ -1,0 +1,27 @@
+{
+    "manifest_version": 2,
+    "name": "should-i-trust",
+    "version": "0.1",
+  
+    "description": "OSINT tool to evaluate the trustworthiness of a company",
+    "icons": { "16" : "images/icon.png",
+                          "48" : "images/48.png",
+                          "128" : "images/128.png"},
+    "homepage_url": "https://github.com/ericalexanderorg/should-i-trust",
+    "permissions": [
+        "https://censys.io/*",
+        "https://www.virustotal.com/*",
+        "https://gitlab.com/*",
+        "https://bitbucket.org/*",
+        "https://api.github.com/*",
+        "https://transparencyreport.google.com/*",
+        "https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/master/data/domains.txt",
+        "https://buckets.grayhatwarfare.com/api/v1/*"
+    ],
+    "browser_action": {
+        "default_icon": "images/icon.png",
+        "default_title": "should-i-trust",
+        "default_popup": "popup.html"
+    },
+    "options_page": "options.html"
+  }

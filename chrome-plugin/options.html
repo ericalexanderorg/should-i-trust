@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="thirdParty/bootstrap.min.css">
+    <link rel="stylesheet" href="thirdParty/simple-line-icons.min.css">
+    <link rel="stylesheet" href="thirdParty/font-awesome.min.css">
+    <!--<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="main.css">
+    <script src="thirdParty/jquery.min.js"></script>
+    <script src="thirdParty/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+            <!-- Sidebar Holder -->
+            <nav id="sidebar">
+                <div class="sidebar-header">
+                    Domain OSINT:
+                </div>
+                <form class="new-domain" id="new-domain" action="#" style="margin:auto;max-width:300px">
+                        <input type="text" placeholder="    New Domain">
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                <ul class="list-unstyled components" id="domain-list">
+                </ul>
+                <button id="settings" class="icon-settings"></button>
+            </nav>
+
+            <!-- Page Content Holder -->
+            <div id="content">
+                <div id="domain-title"></div>
+                <div id="domain-data">
+                    <div class="domain-tile" id="Misc">
+                        <h1>Misc</h1>
+                        <ul></ul>
+                    </div>
+                    <div class="domain-tile">
+                        <h1>Buckets</h1>
+                        <ul id="Buckets"></ul>
+                    </div>
+                    <div class="domain-tile">
+                        <h1>Repos</h1>
+                        <ul id="Repos"></ul>
+                    </div>
+                    <div class="domain-tile">
+                        <h1>Ports/IPs</h1>
+                        <ul id="IPs"></ul>
+                    </div>
+                    <div class="domain-tile">
+                        <h1>Domains</h1>
+                        <ul id="Domains"></ul>
+                    </div>
+                </div>
+            </div>
+            <div id="get-keys" style="display:none">
+                <form>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="inputGroup-sizing-default">virustotal.com key</span>
+                        </div>
+                        <input id="virus-total-key" type="text" class="form-control" aria-label="virus-total" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="inputGroup-sizing-default">censys.io api id</span>
+                        </div>
+                        <input id="censys-uid" type="text" class="form-control" aria-label="censys" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="inputGroup-sizing-default">censys.io api secret</span>
+                        </div>
+                        <input id="censys-key" type="text" class="form-control" aria-label="censys" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text" id="inputGroup-sizing-default">grayhatwarfare.com access token</span>
+                        </div>
+                        <input id="grayhatwarfare-key" type="text" class="form-control" aria-label="grayhatwarfare" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                    <button id="save-keys" type="submit" class="btn btn-default">Submit</button>
+                </form>
+            </div>
+            <div id="loading" style="display:none">
+                <img src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
+                <p1>loading...</p1>
+            </div>
+    </div>
+</body>
+
+</html>
