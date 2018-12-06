@@ -5,11 +5,22 @@
 ![](https://img.shields.io/github/release/ericalexanderorg/should-i-trust.svg) 
 ![](https://img.shields.io/github/issues/ericalexanderorg/should-i-trust.svg) 
 
-![flask screenshot](https://github.com/ericalexanderorg/should-i-trust/raw/master/readme-images/flask-screenshot.jpg)
+![screenshot](https://github.com/ericalexanderorg/should-i-trust/raw/master/readme-images/flask-screenshot.jpg)
 
 ## Summary
 -------------
 should-i-trust is a tool to evaluate OSINT signals for a domain. 
+
+## Requirements
+-------------
+should-i-trust requires API keys from the following sources:
+
+
+[Censys.io](https://censys.io/register) - Free for for first 250/quries/month
+
+[VirusTotal](https://www.virustotal.com) - Free
+
+[GrayHatWarFare](https://buckets.grayhatwarfare.com/register) - Free with limited results
 
 ### Use Case
 -------------
@@ -28,19 +39,19 @@ code running and no directory restrictions.
 should-i-trust doesn't provide all the information you will need to make a go/no-go decision but it will allow you
 to quickly gather OSINT data for further evaluation. 
 
+should-i-trust is also useful for red team or similar engagements. It can quickly identify targets to probe. 
+
 ### Setup
 -------------
-Create a settings.json file in the flask directory with your API secrets. See settings.json.example for an example. 
+Either install the chrome extension through crome or download and manually install in chrome using [developer mode](https://developer.chrome.com/extensions/faq). 
 
 ### Running
 -------------
-> cd should-i-trust/flask/
+> Open the extension
 
-> pip install -r requirements.txt
+> Enter your API keys (required once)
 
-> python app.py
-
-By default flask will listen on port 8080. Connect to http://localhost:8080
+> Enter a domain to query
 
 
 ### Output
@@ -49,7 +60,8 @@ By default flask will listen on port 8080. Connect to http://localhost:8080
 + Domains found through VirusTotal, Censys.io, and the Google Cert Transparency Report
 + IPs and open ports found through Censys.io
 + Repositories found on GitHub, GitLab, and Bitbucket
-+ Misch data found on virustotal.com
++ Misc data found on virustotal.com
++ AWS bucket files found exposed through GrayHatWarfare
 
 ### Road Map
 TBD
