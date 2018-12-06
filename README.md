@@ -43,7 +43,7 @@ should-i-trust is also useful for red team or similar engagements. It can quickl
 
 ### Setup
 -------------
-Either install the chrome extension through crome or download and manually install in chrome using [developer mode](https://developer.chrome.com/extensions/faq). 
+Either [install the chrome extension through chrome](https://chrome.google.com/webstore/detail/should-i-trust/hocfamfiidomggjegfgenhgaaifjjmla) or download and manually install in chrome using [developer mode](https://developer.chrome.com/extensions/faq). 
 
 ### Running
 -------------
