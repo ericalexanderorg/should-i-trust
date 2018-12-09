@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="thirdParty/bootstrap.min.css">
     <link rel="stylesheet" href="thirdParty/simple-line-icons.min.css">
     <link rel="stylesheet" href="thirdParty/font-awesome.min.css">
-    <!--<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="thirdParty/bootstrap-treeview.min.css">
     <link rel="stylesheet" href="main.css">
     <script src="thirdParty/jquery.min.js"></script>
     <script src="thirdParty/bootstrap.bundle.min.js"></script>
+    <script src="thirdParty/bootstrap-treeview.min.js"></script>
     <script src="app.js"></script>
 </head>
 
@@ -32,30 +33,9 @@
             </nav>
 
             <!-- Page Content Holder -->
-            <div id="content">
-                <div id="domain-title"></div>
-                <div id="domain-data">
-                    <div class="domain-tile" id="Misc">
-                        <h1>Misc</h1>
-                        <ul></ul>
-                    </div>
-                    <div class="domain-tile">
-                        <h1>Buckets</h1>
-                        <ul id="Buckets"></ul>
-                    </div>
-                    <div class="domain-tile">
-                        <h1>Repos</h1>
-                        <ul id="Repos"></ul>
-                    </div>
-                    <div class="domain-tile">
-                        <h1>Ports/IPs</h1>
-                        <ul id="IPs"></ul>
-                    </div>
-                    <div class="domain-tile">
-                        <h1>Domains</h1>
-                        <ul id="Domains"></ul>
-                    </div>
-                </div>
+            <div id="content" style="width:100%;">
+                <div id="tree" style="float:left"></div>
+                <div id="more-info" style="float:left;width:100px;"></div>
             </div>
             <div id="get-keys" style="display:none">
                 <form>

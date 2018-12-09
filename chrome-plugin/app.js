@@ -1,5 +1,21 @@
+// array of data we need to process
+data_keys = [
+    "bug_bounty",
+    "google_transparency",
+    "censys",
+    "github",
+    "gitlab",
+    "virus_total",
+    "grayhatwarfare"
+];
+
 // page load
 $(document).ready(function () {
+    // check if we're in developer mode and make that clear
+    if (!('update_url' in chrome.runtime.getManifest())){
+        $('.sidebar-header').html("DEVELOPER MODE");
+    }
+
     // Sanity check, make sure we have our api keys
     if (
         !(localStorage.secret_virus_total_key)
@@ -35,7 +51,7 @@ $(document).ready(function () {
         domain = $("input:first").val();
         var domain_match = new RegExp('^[a-z0-9-]{2,30}\.[a-z]{2,10}$');
         if (domain_match.test(domain)) {
-            displayDomain(domain);
+            loadDomain(domain);
         }
         else {
             alert("NO domain match");
@@ -73,61 +89,58 @@ $(document).ready(function () {
     });
 });
 
-function displayDomain(domain){
-    displayLoading(true);
+function loadDomain(domain){
+    // Counterintutive, set loading false here to clear the state and evaluate later
+    displayLoading(false);
+
     if (localStorage.getItem(domainKey(domain)) === null) {
         // domain key doesn't exist, create it
         localStorage[domainKey(domain)] = JSON.stringify({})
     }
     dict = JSON.parse(localStorage[domainKey(domain)])
-    data_keys = [
-        "bug_bounty",
-        "google_transparency",
-        "censys",
-        "github",
-        "gitlab",
-        "virus_total",
-        "grayhatwarfare"
-    ];
+
     // Get data, if it's missing
     for (var i in data_keys){
         if (!(data_keys[i] in dict)){
+            console.log('Missing: '+data_keys[i]);
+            displayLoading(true);
             $("#loading").append('<br>Loading '+data_keys[i]+' data<br>');
             getData(data_keys[i],domain)
         }
     }
-    $("#loading").append('<br>Done loading data<br>').delay(5000);
-    // Done loading data, now display it
-    // Create a string to hold temporary data
-    var t = "";
-    // Create a array to hold sub-domains
-    var subDomains = [];
-    // Create dict to hold our ip & port info
-    var ips = {};
 
-    data = JSON.parse(localStorage[domainKey(domain)]);
+    if ($('#loading').is(':hidden')){
+        displayDomain(domain)
+    }
+}
 
-    // Load sub domain data
-    $.each(data['virus_total']['subdomains'],function(index,item) {
-        subDomains = appendArrayUniq(subDomains,item);
-    });
-    $.each(data['google_transparency'],function(index,item) {
-        subDomains = appendArrayUniq(subDomains,item);
-    });
+function displayDomain(domain){
+    data = JSON.parse(localStorage[domainKey(domain)])
+    // Get data, if it's missing
+    for (var i in data_keys){
+        if (!(data_keys[i] in data)){
+            console.log('Missing, not displaying: '+data_keys[i]);
+            return
+        }
+    }
+    $("#loading").append('<br>Done loading data<br>');
 
-    // Load IP/Port data
-    $.each(data['censys']['results'],function(index,item) {
-        $.each(data['censys']['results'][index]['protocols'],function(index,protocol) {
-            ips = appendIP(ips,item['ip'],protocol)
-        });
-    });
-   
-    // Domain title
-    $("#domain-title").html(domain+" <a href='#' class='domain-delete icon-trash' domain='"+domain+"'></a>");
-    t = data['virus_total']['categories'].join(",")
+    // Start building dict (used for our tree view)
+    tree = []
+    tree.push({text: domain})
 
-    // Misc data
-    html = "<li><b>VT Categories:</b> "+t+"</li>";
+    // Load misc data
+    temp_dict = {}
+    temp_dict['text'] = 'Categories';
+    temp_dict['icon'] = 'icon-plus';
+    temp_dict['selectedIcon'] = 'icon-minus';
+    temp_dict['state'] = {
+        checked: true,
+        disabled: false,
+        expanded: true,
+        selected: true
+    }
+    temp_dict['nodes'] = [];
     arMisc = [
         'BitDefender category',
         'Forcepoint ThreatSeeker category',
@@ -136,65 +149,215 @@ function displayDomain(domain){
     ]
     $.each(arMisc,function(index,item) {
         if (data['virus_total'][item]){
-            html += "<li><b>"+item+":</b> "+data['virus_total'][item]+"</li>";
+            //tree['Misc'][item]=data['virus_total'][item];
+            temp_dict['nodes'].push({
+                text: "<b>"+item+ "</b>: " + data['virus_total'][item]
+            });
         }
     });
-    $("#Misc ul").html(html);
+    tree.push(temp_dict);
 
-    // Display sub domains
-    subDomains.sort();
-    html = ""; 
-    $.each(subDomains,function(i,sd) {
-        html += `<div class="hide-children">
-                    <li><i class="icon-plus"></i><a href="javascript:void(0)">`+sd+`</a></li>
-                    <ul style="display: none">
-                        <li><a href="http://`+sd+`" target="_blank"><i class="icon-share-alt"></i>http</a></li>
-                        <li><a href="https://`+sd+`" target="_blank"><i class="icon-share-alt"></i>https</a></li>
-                        <li><a href="https://censys.io/ipv4?q=`+sd+`" target="_blank"><i class="icon-share-alt"></i>censys.io</a></li>
-                        <li><a href="https://www.shodan.io/search?query=`+sd+`" target="_blank"><i class="icon-share-alt"></i>shodan.io</a></li>
-                    </ul>
-                </div>`;
-        
+
+    // Load domain data
+    temp_dict = {}
+    c= Object.keys(data['censys']['results']).length + Object.keys(data['google_transparency']).length;
+    temp_dict['text'] = 'Domains ('+c+')';
+    temp_dict['icon'] = 'icon-plus';
+    temp_dict['selectedIcon'] = 'icon-minus';
+    // Temp array
+    subDomains = [];
+    // Load sub domain data
+    $.each(data['virus_total']['subdomains'],function(index,item) {
+        subDomains = appendArrayUniq(subDomains,{text: item});
     });
-    $("#Domains").html(html);
+    $.each(data['google_transparency'],function(index,item) {
+        subDomains = appendArrayUniq(subDomains,{text: item});
+    });
+    temp_dict['nodes'] = subDomains
+    tree.push(temp_dict);
 
-    // Display IP/Port data
-    html = "";
-    $.each(ips,function(key,val) {
-        html += `<div class="hide-children">
-                    <li><i class="icon-plus"></i><a href="javascript:void(0)">`+key+`</a></li>
-                    <ul style="display: none">`;
-        $.each(val,function(index,item) {
-            html += `       <li>`+item+`</li>
-                            <li>
-                            <ul style="display: none">
-                                <li><a href="https://censys.io/ipv4?q=`+item+`" target="_blank"><i class="icon-share-alt"></i>censys</a></li>
-                                <li><a href="https://www.shodan.io/search?query=`+item+`" target="_blank"><i class="icon-share-alt"></i>shodan</a></li>
-                            </ul>
-                            </li>`;
+    // Load IP/Port data
+    temp_dict = {}
+    temp_dict['text'] = 'IPs ('+Object.keys(data['censys']['results']).length+')';
+    temp_dict['icon'] = 'icon-plus';
+    temp_dict['selectedIcon'] = 'icon-minus';
+    portsIps = {};
+    // Load IP/Port data
+    $.each(data['censys']['results'],function(index,item) {
+        $.each(data['censys']['results'][index]['protocols'],function(index,protocol) {
+            portsIps = appendIP(portsIps,item['ip'],protocol)
         });
-        html += `
-                    </ul>
-                </div>`
     });
-    $("#IPs").html(html);
-
-    // Repos
-    html = "";
-    $.each(data['github']['items'],function(i,item) {
-        html +=`<li><a href="`+item['html_url']+`" target="_blank"><i class="icon-share-alt""></i>`+item['full_name']+`</a></li>`;
+    temp_dict['nodes'] = [];
+    $.each(portsIps,function(key,value) {
+        d = {};
+        d['icon'] = 'icon-plus';
+        d['selectedIcon'] = 'icon-minus';
+        d['state'] = {
+            checked: false,
+            disabled: false,
+            expanded: false,
+            selected: false
+        }
+        d['text'] = key;
+        d['nodes'] = [];
+        $.each(value,function(index,item) {
+            d['nodes'].push({text: item})
+        });
+        //console.log(d);
+        temp_dict['nodes'].push(d);
     });
-    $("#Repos").html(html);
+    console.log(temp_dict);
+    tree.push(temp_dict);
 
-    // Buckets
-    html = "";
+    // Load Buckets
+    temp_dict = {}
+    temp_dict['icon'] = 'icon-plus';
+    temp_dict['selectedIcon'] = 'icon-minus';
+    temp_dict['state'] = {
+        checked: false,
+        disabled: false,
+        expanded: false,
+        selected: false
+    }
+    temp_dict['nodes'] = [];
+    c = 0;
     $.each(data['grayhatwarfare']['files'],function(i,item) {
-        html +=`<li><a href="`+item['url']+`" target="_blank"><i class="icon-share-alt""></i>`+item['filename']+`</a></li>`;
+        c += 1;
+        temp_dict['nodes'].push({
+            text: item['filename'],
+            icon: "glyphicon glyphicon-stop",
+            selectedIcon: "glyphicon glyphicon-stop",
+            color: "#000000",
+            backColor: "#FFFFFF",
+            href: item['url'],
+            selectable: true,
+            state: {
+              checked: false,
+              disabled: false,
+              expanded: false,
+              selected: false
+            },
+            tags: ['available'],
+            nodes: []
+          });
     });
-    $("#Buckets").html(html);
-    displayLoading(false)
-    loadMenu()
+    temp_dict['text'] = 'Buckets ('+c+')';
+    tree.push(temp_dict);
+
+    // Load Repos
+    temp_dict = {}
+    temp_dict['text'] = 'Repos ('+Object.keys(data['github']['items']).length+')';
+    temp_dict['icon'] = 'icon-plus';
+    temp_dict['selectedIcon'] = 'icon-minus';
+    temp_dict['state'] = {
+        checked: false,
+        disabled: false,
+        expanded: false,
+        selected: false
+    }
+    temp_dict['nodes'] = [];
+    $.each(data['github']['items'],function(i,item) {
+        temp_dict['nodes'].push({
+            text: item['full_name'],
+            icon: "glyphicon glyphicon-stop",
+            selectedIcon: "glyphicon glyphicon-stop",
+            color: "#000000",
+            backColor: "#FFFFFF",
+            href: item['html_url'],
+            selectable: true,
+            state: {
+              checked: false,
+              disabled: false,
+              expanded: false,
+              selected: false
+            },
+            tags: ['available'],
+            nodes: []
+          });
+    });
+    tree.push(temp_dict);
+
+
+    tree['Repos'] = {}
+    // GitHub
+    tree['Repos']['GitHub'] = {};
+    $.each(data['github']['items'],function(i,item) {
+        tree['Repos']['GitHub'][item['full_name']] = item['html_url'];
+    });
+
+    $('#tree').treeview({
+        data: tree,
+        onNodeSelected: function(event, data) {
+            treeNodeClicked(event, data);
+        },
+        onNodeUnselected: function(event, data) {
+            treeNodeClicked(event, data);
+        }
+    });
+
+    // Collapse tree
+    $('#tree').treeview('collapseAll', { silent: true });
+    // Expand Misc
+    $('#tree').treeview('expandNode', [ 1, { levels: 1, silent: true } ]);
+    // Disable Misc nodes, nothing to click there
+    $.each($('#tree').treeview('getNode', 0).nodes, function(i,item){
+        $('#tree').treeview('disableNode', [ item.nodeId, { silent: true } ]);
+    });
+    loadMenu();
+    displayLoading(false);
 }
+
+function treeNodeClicked(event, data){
+    // Clear out more info
+    $('#more-info').html(" ");
+    //console.log(event);
+    console.log(data);
+    if (!("icon" in data)){
+        // It's either an IP or a domain
+        var dotCount = (data.text.match(/\./g) || []).length;
+        console.log(dotCount);
+        if (dotCount == 3){
+            // it's an IP
+            html = '<p>'+data.text+'</p>'
+            html += '<p><a class="icon-share-alt" target="_blank" href="https://censys.io/ipv4?q='+data.text+'">Censys</a></p>'
+            html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
+            html += '<p><a class="icon-share-alt" target="_blank" href="https://viz.greynoise.io/ip/'+data.text+'">Greynoise</a></p>'
+            $('#more-info').html(html);
+        }
+        else {
+            // it's a domain
+            html = '<p>'+data.text+'</p>'
+            html += '<a class="icon-share-alt" target="_blank" href="https://censys.io/domain?q='+data.text+'">Censys</a></p>'
+            html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
+            $('#more-info').html(html);
+        }
+        return
+    }
+    if (data.icon == "icon-plus" && data.text.indexOf("/") != -1 && event.type == "nodeSelected"){
+        // This is a port expend/collapse
+        if (!data.state.expanded){
+            $('#tree').treeview('expandNode', [data.nodeId, { levels: 1, silent: true, ignoreChildren: true }]);
+        }
+        else {
+            $('#tree').treeview('collapseNode', [data.nodeId, { levels: 1, silent: true, ignoreChildren: true }]);
+        }
+        // port selected, do nothing
+        return
+    }
+    if ("href" in data){
+        // Has a link, open it in a new tab
+        var win = window.open(data.href, '_blank');
+        win.focus();
+        return
+    }
+    if (data.icon == "icon-plus" && event.type == "nodeSelected"){
+        // Top level expandable node, collapse everything and expand this
+        $('#tree').treeview('collapseAll', { silent: true });
+        $('#tree').treeview('expandNode', [data.nodeId, { levels: 1, silent: true, ignoreChildren: true }]);
+    }
+}
+
 
 function showSecretsForm(status){
     if (status){
@@ -217,6 +380,16 @@ function appendArrayUniq(ar,item){
 }
 
 function appendIP(dict,ip,port){
+    d = {}
+    d['text'] = port;
+    d['icon'] = 'icon-plus';
+    d['selectedIcon'] = 'icon-minus';
+    d['state'] = {
+        checked: false,
+        disabled: false,
+        expanded: false,
+        selected: false
+    }
     if(!(dict[port])){
         dict[port]=[];
     }
@@ -226,12 +399,14 @@ function appendIP(dict,ip,port){
     return dict
 }
 
-function displayLoading(status){
-    if (status){
+function displayLoading(loading){
+    if (loading){
+        console.log('loading');
         $('#content').hide();
         $('#loading').show();
     }
     else {
+        console.log('not-loading');
         $('#content').show();
         $('#loading').hide();
     }
@@ -270,7 +445,8 @@ function updateDomainData(domain, k, v){
     // Get current data and update with new
     dict = JSON.parse(localStorage[domainKey(domain)])
     dict[k] = v;
-    localStorage[domainKey(domain)] = JSON.stringify(dict)
+    localStorage[domainKey(domain)] = JSON.stringify(dict);
+    displayDomain(domain)
 }
 
 function getData(key,domain){
@@ -284,7 +460,7 @@ function getData(key,domain){
                 type: "GET",
                 url: url,
                 dataType: 'json',
-                async: false,
+                //async: false,
                 success: function (data){
                     updateDomainData(domain,'grayhatwarfare', data);
                 },
@@ -298,7 +474,7 @@ function getData(key,domain){
             $.ajax({
                 type: "GET",
                 url: url,
-                async: false,
+                //async: false,
                 dataType: 'json',
                 success: function (data){
                     updateDomainData(domain,'virus_total', data);
@@ -316,7 +492,7 @@ function getData(key,domain){
             $.ajax({
                 type: "GET",
                 url: url,
-                async: false,
+                //async: false,
                 dataType: 'json',
                 success: function (data){
                     updateDomainData(domain,'gitlab', data);
@@ -331,7 +507,7 @@ function getData(key,domain){
             $.ajax({
                 type: "GET",
                 url: url,
-                async: false,
+                //async: false,
                 dataType: 'json',
                 success: function (data){
                     updateDomainData(domain,'github', data);
@@ -343,7 +519,7 @@ function getData(key,domain){
             $.ajax({
                 type: "POST",
                 url: url,
-                async: false,
+                //async: false,
                 dataType: 'json',
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader('Authorization', 'Basic ' + btoa(localStorage.secret_censys_uid + ':' + localStorage.secret_censys_key));
@@ -364,7 +540,7 @@ function getData(key,domain){
             $.ajax({
                 type: "GET",
                 url: url,
-                async: false,
+                //async: false,
                 dataType: 'text',
                 success: function (data){
                     // Giberish in first two lines, remove them
