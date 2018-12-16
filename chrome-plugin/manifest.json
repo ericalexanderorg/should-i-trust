@@ -9,16 +9,6 @@
                           "128" : "images/128.png"},
     "homepage_url": "https://github.com/ericalexanderorg/should-i-trust",
     "permissions": [
-        "https://censys.io/*",
-        "https://www.virustotal.com/*",
-        "https://gitlab.com/*",
-        "https://bitbucket.org/*",
-        "https://api.github.com/*",
-        "https://transparencyreport.google.com/*",
-        "https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/master/data/domains.txt",
-        "https://buckets.grayhatwarfare.com/api/v1/*",
-        "https://stat.ripe.net/*"
-
     ],
     "browser_action": {
         "default_icon": "images/icon.png",
