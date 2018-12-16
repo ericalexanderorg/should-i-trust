@@ -43,6 +43,22 @@ a, a:hover, a:focus {
   padding: 5px;
 }
 
+#more-info {
+  padding: 10px;
+  width: 75%;
+  float: left;
+}
+
+#tree {
+  float: left;
+  overflow-y:auto;
+  height: 800px;
+}
+
+#content {
+  width: 100%;
+}
+
 .navbar {
   padding:15px 10px;
   background:rgb(56,72,97);

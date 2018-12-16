@@ -115,6 +115,8 @@ function loadDomain(domain){
 }
 
 function displayDomain(domain){
+    // set selected_domain key to this domain name. Used later on when navigating. 
+    localStorage['selected_domain'] = domain;
     data = JSON.parse(localStorage[domainKey(domain)])
     // Get data, if it's missing
     for (var i in data_keys){
@@ -128,34 +130,6 @@ function displayDomain(domain){
     // Start building dict (used for our tree view)
     tree = []
     tree.push({text: domain})
-
-    // Load misc data
-    temp_dict = {}
-    temp_dict['text'] = 'Categories';
-    temp_dict['icon'] = 'icon-plus';
-    temp_dict['selectedIcon'] = 'icon-minus';
-    temp_dict['state'] = {
-        checked: true,
-        disabled: false,
-        expanded: true,
-        selected: true
-    }
-    temp_dict['nodes'] = [];
-    arMisc = [
-        'BitDefender category',
-        'Forcepoint ThreatSeeker category',
-        'Malwarebytes hpHosts info',
-        'Websense ThreatSeeker category',
-    ]
-    $.each(arMisc,function(index,item) {
-        if (data['virus_total'][item]){
-            //tree['Misc'][item]=data['virus_total'][item];
-            temp_dict['nodes'].push({
-                text: "<b>"+item+ "</b>: " + data['virus_total'][item]
-            });
-        }
-    });
-    tree.push(temp_dict);
 
 
     // Load domain data
@@ -207,7 +181,7 @@ function displayDomain(domain){
         //console.log(d);
         temp_dict['nodes'].push(d);
     });
-    console.log(temp_dict);
+    //console.log(temp_dict);
     tree.push(temp_dict);
 
     // Load Buckets
@@ -298,35 +272,83 @@ function displayDomain(domain){
 
     // Collapse tree
     $('#tree').treeview('collapseAll', { silent: true });
-    // Expand Misc
-    $('#tree').treeview('expandNode', [ 1, { levels: 1, silent: true } ]);
-    // Disable Misc nodes, nothing to click there
-    $.each($('#tree').treeview('getNode', 0).nodes, function(i,item){
-        $('#tree').treeview('disableNode', [ item.nodeId, { silent: true } ]);
-    });
+    // Select domain info
+    $('#tree').treeview('selectNode', [0]);
     loadMenu();
     displayLoading(false);
 }
 
 function treeNodeClicked(event, data){
+    domainData = JSON.parse(localStorage[domainKey(localStorage['selected_domain'])]);
     // Clear out more info
     $('#more-info').html(" ");
     //console.log(event);
-    console.log(data);
+    //console.log(data);
     if (!("icon" in data)){
-        // It's either an IP or a domain
+        // It's one of: the domain name, an IP, or a sub-domain
         var dotCount = (data.text.match(/\./g) || []).length;
-        console.log(dotCount);
-        if (dotCount == 3){
+        if (data.nodeId == 0) {
+            // Domain selected, show misc data
+            
+            $('#tree').treeview('collapseAll', { silent: true });
+            html = "";
+            arMisc = [
+                'BitDefender category',
+                'Forcepoint ThreatSeeker category',
+                'Malwarebytes hpHosts info',
+                'Websense ThreatSeeker category',
+            ]
+            $.each(arMisc,function(index,item) {
+                if (domainData['virus_total'][item]){
+                    html += "<b>"+item+"</b>: "+domainData['virus_total'][item]+"<br>";
+                }
+            });
+            $('#more-info').html(html);
+        }
+        else if (dotCount == 3){
             // it's an IP
             html = '<p>'+data.text+'</p>'
+            $.each(domainData['censys']['results'],function(index,item) {
+                if (item['ip'] == data.text){
+                    //console.log(domainData['censys']['results'][index]);
+                    html += "<b>Location</b>: "+domainData['censys']['results'][index]['location.country']+"<br>";
+                    html += "<b>Time Zone</b>: "+domainData['censys']['results'][index]['location.timezone']+"<br>";
+                }
+            });
+            // Get reverse DNS for IP
+            $.ajax({
+                dataType: "json",
+                url: "https://stat.ripe.net/data/reverse-dns-ip/data.json?resource="+data.text,
+                data: data,
+                async: false, 
+                success: function(jd) {
+                    html += "<b>Reverse DNS</b>: "+jd['data']['result'][0]+"<br>";
+                }
+            });
+            // Get greynoise info
+            $.ajax({
+                dataType: "json",
+                url: "https://viz.greynoise.io/api/ip/"+data.text,
+                data: data,
+                async: false, 
+                success: function(jd) {
+                    if (jd['records']=="unknown"){
+                        html += "<b>Greynoise</b>: No Data</a><br>";
+                    }
+                    else {
+                        html += "<b>Greynoise</b>: <a class='icon-share-alt' target='_blank' href='https://viz.greynoise.io/ip/"+data.text+"'></a><br>";
+                    }
+                    
+                }
+            });
+            
+            html += '<br><br>'
             html += '<p><a class="icon-share-alt" target="_blank" href="https://censys.io/ipv4?q='+data.text+'">Censys</a></p>'
             html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
-            html += '<p><a class="icon-share-alt" target="_blank" href="https://viz.greynoise.io/ip/'+data.text+'">Greynoise</a></p>'
             $('#more-info').html(html);
         }
         else {
-            // it's a domain
+            // it's a sub-domain
             html = '<p>'+data.text+'</p>'
             html += '<a class="icon-share-alt" target="_blank" href="https://censys.io/domain?q='+data.text+'">Censys</a></p>'
             html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
@@ -342,7 +364,6 @@ function treeNodeClicked(event, data){
         else {
             $('#tree').treeview('collapseNode', [data.nodeId, { levels: 1, silent: true, ignoreChildren: true }]);
         }
-        // port selected, do nothing
         return
     }
     if ("href" in data){
@@ -401,12 +422,10 @@ function appendIP(dict,ip,port){
 
 function displayLoading(loading){
     if (loading){
-        console.log('loading');
         $('#content').hide();
         $('#loading').show();
     }
     else {
-        console.log('not-loading');
         $('#content').show();
         $('#loading').hide();
     }

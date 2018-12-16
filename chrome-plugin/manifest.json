@@ -16,7 +16,9 @@
         "https://api.github.com/*",
         "https://transparencyreport.google.com/*",
         "https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/master/data/domains.txt",
-        "https://buckets.grayhatwarfare.com/api/v1/*"
+        "https://buckets.grayhatwarfare.com/api/v1/*",
+        "https://stat.ripe.net/*"
+
     ],
     "browser_action": {
         "default_icon": "images/icon.png",
