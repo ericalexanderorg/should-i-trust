@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "should-i-trust",
-    "version": "0.0.0.3",
+    "version": "0.0.0.4",
   
     "description": "OSINT tool to evaluate the trustworthiness of a company",
     "icons": { "16" : "images/icon.png",

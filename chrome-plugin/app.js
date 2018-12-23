@@ -87,6 +87,83 @@ $(document).ready(function () {
             location.reload();
         }
     });
+
+    // Display censys IP data in iframe
+    $(document).on("click", ".display-censys-ip", function () {
+        ip = $(this).attr("ip");
+        $('#more-info-frame').html('<iframe src="https://censys.io/ipv4?q='+ip+'"></iframe>');
+    });
+
+    // Display censys DOMAIN data in iframe
+    $(document).on("click", ".display-censys-domain", function () {
+        domain = $(this).attr("domain");
+        $('#more-info-frame').html('<iframe src="https://censys.io/domain?q='+domain+'"></iframe>');
+    });
+
+    // Display shodan data in new tab
+    $(document).on("click", ".display-shodan", function () {
+        query = $(this).attr("query");
+        window.open('https://www.shodan.io/search?query='+query, '_blank');
+        $('#more-info-frame').html('Shodan page opened in new tab');
+    });
+
+    // Display http in iframe
+    $(document).on("click", ".display-http", function () {
+        url = $(this).attr("url");
+        $('#more-info-frame').html('<iframe src="http://'+url+'"></iframe>');
+    });
+
+    // Display visual site mapper in iframe
+    $(document).on("click", ".display-site-mapper", function () {
+        url = $(this).attr("url");
+        $('#more-info-frame').html('<iframe src="http://www.visualsitemapper.com/map/'+url+'"></iframe>');
+    });
+
+    // Display nerdy data in new tab
+    $(document).on("click", ".display-nerdy-data", function () {
+        query = $(this).attr("query");
+        window.open('https://nerdydata.com/search?query='+query, '_blank');
+        $('#more-info-frame').html('Nerdy Data opened in new tab');
+    });
+    
+    // Display security trails in new tab
+    $(document).on("click", ".display-security-trails", function () {
+        query = $(this).attr("query");
+        window.open('https://securitytrails.com/domain/'+query+'/dns', '_blank');
+        $('#more-info-frame').html('Security Trails opened in new tab');
+    });
+
+    // Display intelligenc x in new tab
+    $(document).on("click", ".display-intelligence-x", function () {
+        query = $(this).attr("query");
+        window.open('https://intelx.io/?s='+query, '_blank');
+        $('#more-info-frame').html('Intelligence X opened in new tab');
+    });
+
+    // Display threat crowd
+    $(document).on("click", ".display-threat-crowd", function () {
+        query = $(this).attr("query");
+        $('#more-info-frame').html('<iframe src="https://www.threatcrowd.org/domain.php?domain='+query+'"></iframe>');
+    });
+
+    // Display otx for DOMAIN in new tab
+    $(document).on("click", ".display-otx-domain", function () {
+        query = $(this).attr("query");
+        window.open('https://otx.alienvault.com/indicator/domain/'+query, '_blank');
+        $('#more-info-frame').html('OTX opened in new tab');
+    });
+    // Display otx for IP in new tab
+    $(document).on("click", ".display-otx-ip", function () {
+        query = $(this).attr("query");
+        window.open('https://otx.alienvault.com/indicator/ip/'+query, '_blank');
+        $('#more-info-frame').html('OTX opened in new tab');
+    });
+    // Display otx for IP in new tab
+    $(document).on("click", ".display-otx-hostname", function () {
+        query = $(this).attr("query");
+        window.open('https://otx.alienvault.com/indicator/hostname/'+query, '_blank');
+        $('#more-info-frame').html('OTX opened in new tab');
+    });
 });
 
 function loadDomain(domain){
@@ -281,7 +358,8 @@ function displayDomain(domain){
 function treeNodeClicked(event, data){
     domainData = JSON.parse(localStorage[domainKey(localStorage['selected_domain'])]);
     // Clear out more info
-    $('#more-info').html(" ");
+    $('#more-info-content').html(" ");
+    $('#more-info-frame').html(" ");
     //console.log(event);
     //console.log(data);
     if (!("icon" in data)){
@@ -291,7 +369,13 @@ function treeNodeClicked(event, data){
             // Domain selected, show misc data
             
             $('#tree').treeview('collapseAll', { silent: true });
-            html = "";
+            html = "<button class='domain-delete' domain="+localStorage['selected_domain']+">Delete</button>";
+            html += '<button class="display-security-trails" query="'+data.text+'">Security Trails</button>';
+            html += '<button class="display-nerdy-data" query="'+data.text+'">Nerdy Data</button>'
+            html += '<button class="display-intelligence-x" query="'+data.text+'">Intelligence X</button>'
+            html += '<button class="display-threat-crowd" query="'+data.text+'">Threat Crowd</button>'
+            html += '<button class="display-otx-domain" query="'+data.text+'">OTX</button>'
+            html += '<p>'
             arMisc = [
                 'BitDefender category',
                 'Forcepoint ThreatSeeker category',
@@ -303,11 +387,21 @@ function treeNodeClicked(event, data){
                     html += "<b>"+item+"</b>: "+domainData['virus_total'][item]+"<br>";
                 }
             });
-            $('#more-info').html(html);
+            $('#more-info-content').html(html);
+            $('#more-info-frame').html('<iframe src="https://www.threatcrowd.org/domain.php?domain='+data.text+'"></iframe>');
         }
         else if (dotCount == 3){
             // it's an IP
-            html = '<p>'+data.text+'</p>'
+            html = '<button>'+data.text+'</button>'
+            html += '<button class="display-http" url="'+data.text+'">HTTP</button>'
+            html += '<button class="display-censys-ip" ip="'+data.text+'">Censys</button>'
+            html += '<button class="display-shodan" query="'+data.text+'">Shodan</button>'
+            html += '<button class="display-site-mapper" query="'+data.text+'">Site Mapper</button>'
+            html += '<button class="display-intelligence-x" query="'+data.text+'">Intelligence X</button>'
+            html += '<button class="display-otx-ip" query="'+data.text+'">OTX</button>'
+            html += '<br>'
+            $('#more-info-content').html(html);
+            html = "";
             $.each(domainData['censys']['results'],function(index,item) {
                 if (item['ip'] == data.text){
                     //console.log(domainData['censys']['results'][index]);
@@ -341,18 +435,21 @@ function treeNodeClicked(event, data){
                     
                 }
             });
-            
-            html += '<br><br>'
-            html += '<p><a class="icon-share-alt" target="_blank" href="https://censys.io/ipv4?q='+data.text+'">Censys</a></p>'
-            html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
-            $('#more-info').html(html);
+            $('#more-info-frame').html(html);
+            $('#more-info-frame').html('<iframe src="https://www.threatcrowd.org/ip.php?ip='+data.text+'"></iframe>');
         }
         else {
             // it's a sub-domain
-            html = '<p>'+data.text+'</p>'
-            html += '<a class="icon-share-alt" target="_blank" href="https://censys.io/domain?q='+data.text+'">Censys</a></p>'
-            html += '<p><a class="icon-share-alt" target="_blank" href="https://www.shodan.io/search?query='+data.text+'">Shodan</a></p>'
-            $('#more-info').html(html);
+            html = '<button>'+data.text+'</button>'
+            html += '<button class="display-http" url="'+data.text+'">HTTP</button>'
+            html += '<button class="display-censys-domain" domain="'+data.text+'">Censys</button>'
+            html += '<button class="display-shodan" query="'+data.text+'">Shodan</button>'
+            html += '<button class="display-site-mapper" query="'+data.text+'">Site Mapper</button>'
+            html += '<button class="display-intelligence-x" query="'+data.text+'">Intelligence X</button>'
+            html += '<button class="display-otx-hostname" query="'+data.text+'">OTX</button>'
+            
+            $('#more-info-content').html(html);
+            $('#more-info-frame').html('<iframe src="https://www.threatcrowd.org/domain.php?domain='+data.text+'"></iframe>');
         }
         return
     }
