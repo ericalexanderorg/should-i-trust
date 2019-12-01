@@ -164,6 +164,12 @@ $(document).ready(function () {
         window.open('https://otx.alienvault.com/indicator/hostname/'+query, '_blank');
         $('#more-info-frame').html('OTX opened in new tab');
     });
+    // Display Mozilla Observatory 
+    $(document).on("click", ".display-mozilla-observatory", function () {
+        query = $(this).attr("query");
+        window.open('https://observatory.mozilla.org/analyze/'+query, '_blank');
+        $('#more-info-frame').html('Mozilla Observatory opened in new tab');
+    });
 });
 
 function loadDomain(domain){
@@ -375,6 +381,7 @@ function treeNodeClicked(event, data){
             html += '<button class="display-intelligence-x" query="'+data.text+'">Intelligence X</button>'
             html += '<button class="display-threat-crowd" query="'+data.text+'">Threat Crowd</button>'
             html += '<button class="display-otx-domain" query="'+data.text+'">OTX</button>'
+            html += '<button class="display-mozilla-observatory" query="'+data.text+'">Observatory</button>'
             html += '<p>'
             arMisc = [
                 'BitDefender category',
@@ -447,6 +454,7 @@ function treeNodeClicked(event, data){
             html += '<button class="display-site-mapper" query="'+data.text+'">Site Mapper</button>'
             html += '<button class="display-intelligence-x" query="'+data.text+'">Intelligence X</button>'
             html += '<button class="display-otx-hostname" query="'+data.text+'">OTX</button>'
+            html += '<button class="display-mozilla-observatory" query="'+data.text+'">Observatory</button>'
             
             $('#more-info-content').html(html);
             $('#more-info-frame').html('<iframe src="https://www.threatcrowd.org/domain.php?domain='+data.text+'"></iframe>');
