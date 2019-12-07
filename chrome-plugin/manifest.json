@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "should-i-trust",
-    "version": "0.0.0.4",
+    "version": "0.0.0.5",
   
     "description": "OSINT tool to evaluate the trustworthiness of a company",
     "icons": { "16" : "images/icon.png",
@@ -17,7 +17,6 @@
         "https://api.github.com/*",
         "https://censys.io/api/*",
         "https://transparencyreport.google.com/transparencyreport/api/*"
-
     ],
     "browser_action": {
         "default_icon": "images/icon.png",
